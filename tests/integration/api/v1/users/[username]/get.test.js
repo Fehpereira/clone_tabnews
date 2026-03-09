@@ -38,12 +38,12 @@ describe("GET /api/v1/users/[username]", () => {
         email: "mesmo.case@curso.dev",
         password: response2Body.password,
         createdAt: response2Body.createdAt,
-        updateAt: response2Body.updateAt,
+        updatedAt: response2Body.updatedAt,
       });
 
       expect(uuidVersion(response2Body.id)).toBe(4);
       expect(Date.parse(response2Body.createdAt)).not.toBeNaN();
-      expect(Date.parse(response2Body.updateAt)).not.toBeNaN();
+      expect(Date.parse(response2Body.updatedAt)).not.toBeNaN();
     });
     test("With case mismatch", async () => {
       const response1 = await fetch("http://localhost:3000/api/v1/users", {
@@ -74,12 +74,12 @@ describe("GET /api/v1/users/[username]", () => {
         email: "case.diferente@curso.dev",
         password: response2Body.password,
         createdAt: response2Body.createdAt,
-        updateAt: response2Body.updateAt,
+        updatedAt: response2Body.updatedAt,
       });
 
       expect(uuidVersion(response2Body.id)).toBe(4);
       expect(Date.parse(response2Body.createdAt)).not.toBeNaN();
-      expect(Date.parse(response2Body.updateAt)).not.toBeNaN();
+      expect(Date.parse(response2Body.updatedAt)).not.toBeNaN();
     });
     test("With nonexistent username", async () => {
       const response = await fetch(
