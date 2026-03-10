@@ -10,19 +10,9 @@ beforeAll(async () => {
 describe("GET /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
     test("With exact case match", async () => {
-      const response1 = await fetch("http://localhost:3000/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          username: "MesmoCase",
-          email: "mesmo.case@curso.dev",
-          password: "senha123",
-        }),
+      const createdUser = await orchestrator.createUser({
+        username: "MesmoCase",
       });
-
-      expect(response1.status).toBe(201);
 
       const response2 = await fetch(
         "http://localhost:3000/api/v1/users/MesmoCase",
@@ -35,7 +25,7 @@ describe("GET /api/v1/users/[username]", () => {
       expect(response2Body).toEqual({
         id: response2Body.id,
         username: "MesmoCase",
-        email: "mesmo.case@curso.dev",
+        email: createdUser.email,
         password: response2Body.password,
         createdAt: response2Body.createdAt,
         updatedAt: response2Body.updatedAt,
@@ -46,19 +36,9 @@ describe("GET /api/v1/users/[username]", () => {
       expect(Date.parse(response2Body.updatedAt)).not.toBeNaN();
     });
     test("With case mismatch", async () => {
-      const response1 = await fetch("http://localhost:3000/api/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          username: "CaseDiferente",
-          email: "case.diferente@curso.dev",
-          password: "senha123",
-        }),
+      const createdUser = await orchestrator.createUser({
+        username: "CaseDiferente",
       });
-
-      expect(response1.status).toBe(201);
 
       const response2 = await fetch(
         "http://localhost:3000/api/v1/users/casediferente",
@@ -71,7 +51,7 @@ describe("GET /api/v1/users/[username]", () => {
       expect(response2Body).toEqual({
         id: response2Body.id,
         username: "CaseDiferente",
-        email: "case.diferente@curso.dev",
+        email: createdUser.email,
         password: response2Body.password,
         createdAt: response2Body.createdAt,
         updatedAt: response2Body.updatedAt,
