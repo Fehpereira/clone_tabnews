@@ -2,6 +2,7 @@ import database from "infra/database";
 import email from "infra/email";
 import { NotFoundError } from "infra/errors";
 import webserver from "infra/webserver";
+import user from "./user";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000;
 
@@ -65,6 +66,35 @@ Equipe FinTab`,
   });
 }
 
+async function markTokenAsUsed(activationTokenId) {
+  const usedActivationToken = await runUpdateQuery(activationTokenId);
+  return usedActivationToken;
+
+  async function runUpdateQuery(activationTokenId) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          user_activation_tokens
+        SET
+          "usedAt" = timezone('utc', now()),
+          "updatedAt" = timezone('utc', now())
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [activationTokenId],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function activeUserByUserId(userId) {
+  const activatedUser = await user.setFeatures(userId, ["create:session"]);
+  return activatedUser;
+}
+
 async function findOneValidById(tokenId) {
   const validTokenFound = await runSelectQuery(tokenId);
 
@@ -105,6 +135,8 @@ const activation = {
   findOneByUserId,
   create,
   sendEmailToUser,
+  markTokenAsUsed,
+  activeUserByUserId,
   findOneValidById,
 };
 
