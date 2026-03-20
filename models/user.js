@@ -129,8 +129,6 @@ async function update(username, userInputValues) {
       ],
     });
 
-    console.log("resultados:", results);
-
     return results.rows[0];
   }
 }
