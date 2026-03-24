@@ -11,7 +11,7 @@ beforeAll(async () => {
 });
 
 describe("Use case: Registration Flow (all successful)", () => {
-  let createUserResponseBody;
+  let createdUserResponseBody;
   let activationTokenId;
   test("Create user account", async () => {
     const createUserResponse = await fetch(
@@ -31,16 +31,16 @@ describe("Use case: Registration Flow (all successful)", () => {
 
     expect(createUserResponse.status).toBe(201);
 
-    createUserResponseBody = await createUserResponse.json();
+    createdUserResponseBody = await createUserResponse.json();
 
-    expect(createUserResponseBody).toEqual({
-      id: createUserResponseBody.id,
+    expect(createdUserResponseBody).toEqual({
+      id: createdUserResponseBody.id,
       username: "RegistrationFlow",
       email: "registration.flow@curso.dev",
-      password: createUserResponseBody.password,
+      password: createdUserResponseBody.password,
       features: ["read:activation_token"],
-      createdAt: createUserResponseBody.createdAt,
-      updatedAt: createUserResponseBody.updatedAt,
+      createdAt: createdUserResponseBody.createdAt,
+      updatedAt: createdUserResponseBody.updatedAt,
     });
   });
 
@@ -63,7 +63,7 @@ describe("Use case: Registration Flow (all successful)", () => {
     const activationTokenObject =
       await activation.findOneValidById(activationTokenId);
 
-    expect(activationTokenObject.user_id).toEqual(createUserResponseBody.id);
+    expect(activationTokenObject.user_id).toEqual(createdUserResponseBody.id);
     expect(activationTokenObject.usedAt).toBe(null);
   });
 
@@ -85,7 +85,27 @@ describe("Use case: Registration Flow (all successful)", () => {
     expect(activatedUser.features).toEqual(["create:session"]);
   });
 
-  test("Login", async () => {});
+  test("Login", async () => {
+    const createSessionsResponse = await fetch(
+      "http://localhost:3000/api/v1/sessions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "registration.flow@curso.dev",
+          password: "RegistrationFlowPassword",
+        }),
+      },
+    );
+
+    expect(createSessionsResponse.status).toBe(201);
+
+    const createSessionsResponseBody = await createSessionsResponse.json();
+
+    expect(createSessionsResponseBody.user_id).toBe(createdUserResponseBody.id);
+  });
 
   test("Get user information", async () => {});
 });
