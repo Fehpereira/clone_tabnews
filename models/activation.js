@@ -1,13 +1,23 @@
 import database from "infra/database";
 import email from "infra/email";
-import { NotFoundError } from "infra/errors";
+import { ForbiddenError, NotFoundError } from "infra/errors";
 import webserver from "infra/webserver";
 import user from "./user";
+import authorization from "./authorization";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000;
 
+function getUserId(userOrUserId) {
+  if (typeof userOrUserId === "object" && userOrUserId !== null) {
+    return userOrUserId.id;
+  }
+
+  return userOrUserId;
+}
+
 async function findOneByUserId(userId) {
-  const newToken = await runSelectQuery(userId);
+  const normalizedUserId = getUserId(userId);
+  const newToken = await runSelectQuery(normalizedUserId);
   return newToken;
 
   async function runSelectQuery(userId) {
@@ -29,23 +39,68 @@ async function findOneByUserId(userId) {
   }
 }
 
-async function create(userId) {
-  const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
+async function findOneById(tokenId) {
+  const tokenFound = await runSelectQuery(tokenId);
+  return tokenFound;
 
-  const newToken = await runInsertQuery(userId, expiresAt);
+  async function runSelectQuery(tokenId) {
+    const results = await database.query({
+      text: `
+        SELECT
+          *
+        FROM
+          user_activation_tokens
+        WHERE
+          id = $1
+        LIMIT
+          1
+      ;`,
+      values: [tokenId],
+    });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "O token de ativação utilizado não foi encontrado no sistema.",
+        action: "Faça um novo cadastro.",
+      });
+    }
+
+    return results.rows[0];
+  }
+}
+
+async function create(userId) {
+  const normalizedUserId = getUserId(userId);
+  const createdAt = new Date();
+  const updatedAt = createdAt;
+  const expiresAt = new Date(
+    createdAt.getTime() + EXPIRATION_IN_MILLISECONDS,
+  );
+
+  const newToken = await runInsertQuery(
+    normalizedUserId,
+    createdAt,
+    updatedAt,
+    expiresAt,
+  );
   return newToken;
 
-  async function runInsertQuery(userId, expiresAt) {
+  async function runInsertQuery(userId, createdAt, updatedAt, expiresAt) {
     const results = await database.query({
       text: `
         INSERT INTO
-          user_activation_tokens (user_id, "expiresAt")
+          user_activation_tokens (
+            user_id,
+            "createdAt",
+            "updatedAt",
+            "expiresAt"
+          )
         VALUES
-          ($1, $2)
+          ($1, $2, $3, $4)
         RETURNING
           *
       ;`,
-      values: [userId, expiresAt],
+      values: [userId, createdAt, updatedAt, expiresAt],
     });
 
     return results.rows[0];
@@ -90,8 +145,28 @@ async function markTokenAsUsed(activationTokenId) {
   }
 }
 
+async function ensureUserCanUseToken(userId) {
+  const normalizedUserId = getUserId(userId);
+  const userToActivate = await user.findOneById(normalizedUserId);
+
+  if (!authorization.can(userToActivate, "read:activation_token")) {
+    throw new ForbiddenError({
+      message: "Você não pode mais utilizar tokens de ativação.",
+      action: "Entre em contato com o suporte.",
+    });
+  }
+
+  return userToActivate;
+}
+
 async function activeUserByUserId(userId) {
-  const activatedUser = await user.setFeatures(userId, ["create:session"]);
+  const normalizedUserId = getUserId(userId);
+  await ensureUserCanUseToken(normalizedUserId);
+
+  const activatedUser = await user.setFeatures(normalizedUserId, [
+    "create:session",
+    "read:session",
+  ]);
   return activatedUser;
 }
 
@@ -123,7 +198,7 @@ async function findOneValidById(tokenId) {
       throw new NotFoundError({
         message:
           "O token de ativação utilizado não foi encontrado no sistema ou expirou.",
-        action: "Faça um novo cadastro",
+        action: "Faça um novo cadastro.",
       });
     }
 
@@ -132,10 +207,13 @@ async function findOneValidById(tokenId) {
 }
 
 const activation = {
+  EXPIRATION_IN_MILLISECONDS,
   findOneByUserId,
+  findOneById,
   create,
   sendEmailToUser,
   markTokenAsUsed,
+  ensureUserCanUseToken,
   activeUserByUserId,
   findOneValidById,
 };
