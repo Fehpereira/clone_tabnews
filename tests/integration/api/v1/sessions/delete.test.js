@@ -93,9 +93,6 @@ describe("DELETE /api/v1/sessions", () => {
       expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
       expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
 
-      console.log(responseBody.expiresAt);
-      console.log(sessionObject);
-
       expect(
         responseBody.expiresAt < sessionObject.expiresAt.toISOString(),
       ).toBe(true);

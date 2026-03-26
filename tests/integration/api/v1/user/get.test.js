@@ -16,6 +16,8 @@ describe("GET /api/v1/user", () => {
         username: "UserWithValidSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(createdUser);
+
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
       const response = await fetch("http://localhost:3000/api/v1/user", {
@@ -39,8 +41,9 @@ describe("GET /api/v1/user", () => {
         username: "UserWithValidSession",
         email: createdUser.email,
         password: createdUser.password,
+        features: ["create:session", "read:session", "update:user"],
         createdAt: createdUser.createdAt.toISOString(),
-        updatedAt: createdUser.updatedAt.toISOString(),
+        updatedAt: activatedUser.updatedAt.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -129,8 +132,10 @@ describe("GET /api/v1/user", () => {
       });
 
       const createdUser = await orchestrator.createUser({
-        username: "UserWithValidAndHalphSession",
+        username: "UserWithValidAndHalfSession",
       });
+
+      const activatedUser = await orchestrator.activateUser(createdUser);
 
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
@@ -143,6 +148,18 @@ describe("GET /api/v1/user", () => {
       });
 
       expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        id: createdUser.id,
+        username: "UserWithValidAndHalfSession",
+        email: createdUser.email,
+        password: createdUser.password,
+        features: ["create:session", "read:session", "update:user"],
+        createdAt: createdUser.createdAt.toISOString(),
+        updatedAt: activatedUser.updatedAt.toISOString(),
+      });
 
       const renewedSessionObject = await session.findOneValidByToken(
         sessionObject.token,
