@@ -157,7 +157,7 @@ async function ensureUserCanUseToken(userId) {
   return userToActivate;
 }
 
-async function activeUserByUserId(userId) {
+async function activeUserByUserId(userId, isPrivilegedUser) {
   const normalizedUserId = getUserId(userId);
   await ensureUserCanUseToken(normalizedUserId);
 
@@ -165,6 +165,7 @@ async function activeUserByUserId(userId) {
     "create:session",
     "read:session",
     "update:user",
+    ...(isPrivilegedUser ? "update:user:other" : []),
   ]);
   return activatedUser;
 }
