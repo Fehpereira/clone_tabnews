@@ -73,9 +73,7 @@ async function create(userId) {
   const normalizedUserId = getUserId(userId);
   const createdAt = new Date();
   const updatedAt = createdAt;
-  const expiresAt = new Date(
-    createdAt.getTime() + EXPIRATION_IN_MILLISECONDS,
-  );
+  const expiresAt = new Date(createdAt.getTime() + EXPIRATION_IN_MILLISECONDS);
 
   const newToken = await runInsertQuery(
     normalizedUserId,
@@ -166,6 +164,7 @@ async function activeUserByUserId(userId) {
   const activatedUser = await user.setFeatures(normalizedUserId, [
     "create:session",
     "read:session",
+    "update:user",
   ]);
   return activatedUser;
 }
