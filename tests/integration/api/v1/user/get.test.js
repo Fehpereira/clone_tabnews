@@ -39,16 +39,15 @@ describe("GET /api/v1/user", () => {
       expect(responseBody).toEqual({
         id: createdUser.id,
         username: "UserWithValidSession",
-        email: createdUser.email,
-        password: createdUser.password,
         features: ["create:session", "read:session", "update:user"],
-        createdAt: createdUser.createdAt.toISOString(),
-        updatedAt: activatedUser.updatedAt.toISOString(),
+        email: createdUser.email,
+        created_at: createdUser.createdAt.toISOString(),
+        updated_at: activatedUser.updatedAt.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       // Session renrewal assertions
       const renewedSessionObject = await session.findOneValidByToken(
@@ -155,10 +154,9 @@ describe("GET /api/v1/user", () => {
         id: createdUser.id,
         username: "UserWithValidAndHalfSession",
         email: createdUser.email,
-        password: createdUser.password,
         features: ["create:session", "read:session", "update:user"],
-        createdAt: createdUser.createdAt.toISOString(),
-        updatedAt: activatedUser.updatedAt.toISOString(),
+        created_at: createdUser.createdAt.toISOString(),
+        updated_at: activatedUser.updatedAt.toISOString(),
       });
 
       const renewedSessionObject = await session.findOneValidByToken(

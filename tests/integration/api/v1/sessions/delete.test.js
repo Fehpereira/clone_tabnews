@@ -84,20 +84,20 @@ describe("DELETE /api/v1/sessions", () => {
         id: sessionObject.id,
         token: sessionObject.token,
         user_id: sessionObject.user_id,
-        createdAt: responseBody.createdAt,
-        updatedAt: responseBody.updatedAt,
-        expiresAt: responseBody.expiresAt,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        expires_at: responseBody.expires_at,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       expect(
-        responseBody.expiresAt < sessionObject.expiresAt.toISOString(),
+        responseBody.expires_at < sessionObject.expiresAt.toISOString(),
       ).toBe(true);
       expect(
-        responseBody.updatedAt > sessionObject.updatedAt.toISOString(),
+        responseBody.updated_at > sessionObject.updatedAt.toISOString(),
       ).toBe(true);
 
       // Set-Cookie assertions

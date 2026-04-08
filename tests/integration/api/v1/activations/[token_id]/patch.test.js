@@ -107,26 +107,28 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
 
       expect(responseBody).toEqual({
         id: activationToken.id,
-        usedAt: responseBody.usedAt,
+        used_at: responseBody.used_at,
         user_id: activationToken.user_id,
-        expiresAt: activationToken.expiresAt.toISOString(),
-        createdAt: activationToken.createdAt.toISOString(),
-        updatedAt: responseBody.updatedAt,
+        expires_at: activationToken.expiresAt.toISOString(),
+        created_at: activationToken.createdAt.toISOString(),
+        updated_at: responseBody.updated_at,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(uuidVersion(responseBody.user_id)).toBe(4);
 
-      expect(Date.parse(responseBody.usedAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.expiresAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
-      expect(responseBody.updatedAt > responseBody.createdAt).toBe(true);
+      expect(Date.parse(responseBody.used_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > responseBody.created_at).toBe(true);
 
-      const expiresAt = new Date(responseBody.expiresAt);
-      const createdAt = new Date(responseBody.createdAt);
+      const expires_at = new Date(responseBody.expires_at);
+      const created_at = new Date(responseBody.created_at);
 
-      expect(expiresAt - createdAt).toBe(activation.EXPIRATION_IN_MILLISECONDS);
+      expect(expires_at - created_at).toBe(
+        activation.EXPIRATION_IN_MILLISECONDS,
+      );
 
       const activatedUser = await user.findOneById(responseBody.user_id);
       expect(activatedUser.features).toEqual([

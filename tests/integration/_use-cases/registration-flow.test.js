@@ -38,11 +38,9 @@ describe("Use case: Registration Flow (all successful)", () => {
     expect(createdUserResponseBody).toEqual({
       id: createdUserResponseBody.id,
       username: "RegistrationFlow",
-      email: "registration.flow@curso.dev",
-      password: createdUserResponseBody.password,
       features: ["read:activation_token"],
-      createdAt: createdUserResponseBody.createdAt,
-      updatedAt: createdUserResponseBody.updatedAt,
+      created_at: createdUserResponseBody.created_at,
+      updated_at: createdUserResponseBody.updated_at,
     });
   });
 
@@ -81,7 +79,7 @@ describe("Use case: Registration Flow (all successful)", () => {
 
     const activationResponseBody = await activationResponse.json();
 
-    expect(Date.parse(activationResponseBody.usedAt)).not.toBeNaN();
+    expect(Date.parse(activationResponseBody.used_at)).not.toBeNaN();
 
     const activatedUser = await user.findOneByUsername("RegistrationFlow");
     expect(activatedUser.features).toEqual([

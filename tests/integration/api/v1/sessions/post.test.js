@@ -117,23 +117,23 @@ describe("POST /api/v1/sessions", () => {
         id: responseBody.id,
         token: responseBody.token,
         user_id: createdUser.id,
-        createdAt: responseBody.createdAt,
-        expiresAt: responseBody.expiresAt,
-        updatedAt: responseBody.updatedAt,
+        created_at: responseBody.created_at,
+        expires_at: responseBody.expires_at,
+        updated_at: responseBody.updated_at,
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.expiresAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-      const expiresAt = new Date(responseBody.expiresAt);
-      const createdAt = new Date(responseBody.createdAt);
+      const expires_at = new Date(responseBody.expires_at);
+      const created_at = new Date(responseBody.created_at);
 
-      expiresAt.setMilliseconds(0);
-      createdAt.setMilliseconds(0);
+      expires_at.setMilliseconds(0);
+      created_at.setMilliseconds(0);
 
-      expect(expiresAt - createdAt).toBe(session.EXPIRATION_IN_MILLISECONDS);
+      expect(expires_at - created_at).toBe(session.EXPIRATION_IN_MILLISECONDS);
 
       const parsedSetCookie = setCookieParser(response, {
         map: true,
