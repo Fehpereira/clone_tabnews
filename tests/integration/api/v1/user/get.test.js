@@ -16,6 +16,8 @@ describe("GET /api/v1/user", () => {
         username: "UserWithValidSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(createdUser);
+
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
       const response = await fetch("http://localhost:3000/api/v1/user", {
@@ -37,15 +39,15 @@ describe("GET /api/v1/user", () => {
       expect(responseBody).toEqual({
         id: createdUser.id,
         username: "UserWithValidSession",
+        features: ["create:session", "read:session", "update:user"],
         email: createdUser.email,
-        password: createdUser.password,
-        createdAt: createdUser.createdAt.toISOString(),
-        updatedAt: createdUser.updatedAt.toISOString(),
+        created_at: createdUser.createdAt.toISOString(),
+        updated_at: activatedUser.updatedAt.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.createdAt)).not.toBeNaN();
-      expect(Date.parse(responseBody.updatedAt)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       // Session renrewal assertions
       const renewedSessionObject = await session.findOneValidByToken(
@@ -129,8 +131,10 @@ describe("GET /api/v1/user", () => {
       });
 
       const createdUser = await orchestrator.createUser({
-        username: "UserWithValidAndHalphSession",
+        username: "UserWithValidAndHalfSession",
       });
+
+      const activatedUser = await orchestrator.activateUser(createdUser);
 
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
@@ -143,6 +147,17 @@ describe("GET /api/v1/user", () => {
       });
 
       expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        id: createdUser.id,
+        username: "UserWithValidAndHalfSession",
+        email: createdUser.email,
+        features: ["create:session", "read:session", "update:user"],
+        created_at: createdUser.createdAt.toISOString(),
+        updated_at: activatedUser.updatedAt.toISOString(),
+      });
 
       const renewedSessionObject = await session.findOneValidByToken(
         sessionObject.token,
